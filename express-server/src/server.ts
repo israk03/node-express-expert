@@ -54,9 +54,30 @@ app.get("/",(req: Request, res: Response)=>{
     res.send("Hello Next Level Developers.")
 })
 
+// create user route
+app.post("/users", async(req: Request, res: Response)=>{
+    const {name, email, age, phone, address} = req.body;
 
-app.post("/", (req: Request, res: Response)=>{
-    console.log(req.body);
+    try {
+        const result = await pool.query(
+            `
+                INSERT INTO users(name, email, age, phone, address) VALUES($1,$2, $3, $4, $5) RETURNING *
+            `,
+            [name, email, age, phone, address]
+        )
+        return res.status(201).json({
+            success: true,
+            message: "User inserted successfully.",
+            data: result.rows[0],
+        })
+        
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+        
+    }
 
     res.status(201).json({
         success: true, 
