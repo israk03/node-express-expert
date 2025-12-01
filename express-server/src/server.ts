@@ -78,11 +78,63 @@ app.post("/users", async(req: Request, res: Response)=>{
         })
         
     }
+})
 
-    res.status(201).json({
-        success: true, 
-        message: "API is working."
-    })
+// get users route
+app.get("/users", async(req: Request, res: Response)=>{
+    try {
+        const result = await pool.query(
+            `
+                SELECT * FROM users
+
+            `)
+        res.status(200).json({
+            success: true,
+            message: "Users fetched successfully.",
+            data: result.rows,
+        })
+        
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+            details: error,
+        })
+    }
+})
+
+// get specific user route
+app.get("/users/:id", async(req: Request, res: Response)=>{
+    try {
+        const result = await pool.query(
+            `
+                SELECT * FROM users WHERE id = $1
+            `,
+            [req.params.id]
+        )
+
+        // console.log(result.rows)
+
+        if(result.rows.length === 0){
+            res.status(404).json({
+                success: false,
+                message: "User not found."
+            })
+        }else{
+            res.status(200).json({
+                success: true,
+                message: "User found.",
+                data: result.rows[0],
+            })
+        }
+        
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+        
+    }
 })
 
 
