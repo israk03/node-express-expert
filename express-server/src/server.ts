@@ -1,9 +1,7 @@
 import express, { Request, Response } from "express";
 import {Pool} from "pg"
 
-const pool = new Pool({
-    connectionString: 'postgresql://neondb_owner:npg_0rAaTM2fwoNU@ep-still-salad-ahv47zsz-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
-})
+
 
 const app = express();
 const port = 5000;
@@ -11,6 +9,29 @@ const port = 5000;
 // parser
 app.use(express.json());
 
+// DB
+const pool = new Pool({
+  connectionString:
+    'postgresql://neondb_owner:npg_rQTPcpBF2gI1@ep-hidden-wave-a1f05en6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+});
+
+
+const initDB = async() =>{
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS users(
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(150) UNIQUE NOT NULL,
+        age INT,
+        phone VARCHAR(15),
+        address TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+        )
+        `)
+}
+
+initDB();
 
 app.get("/",(req: Request, res: Response)=>{
     res.send("Hello Next Level Developers.")
