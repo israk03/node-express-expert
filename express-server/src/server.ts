@@ -61,7 +61,9 @@ app.post("/users", async(req: Request, res: Response)=>{
     try {
         const result = await pool.query(
             `
-                INSERT INTO users(name, email, age, phone, address) VALUES($1,$2, $3, $4, $5) RETURNING *
+                INSERT INTO users(name, email, age, phone, address)
+                VALUES($1,$2, $3, $4, $5)
+                RETURNING *
             `,
             [name, email, age, phone, address]
         )
@@ -108,7 +110,8 @@ app.get("/users/:id", async(req: Request, res: Response)=>{
     try {
         const result = await pool.query(
             `
-                SELECT * FROM users WHERE id = $1
+                SELECT * FROM users
+                WHERE id = $1
             `,
             [req.params.id]
         )
@@ -125,6 +128,78 @@ app.get("/users/:id", async(req: Request, res: Response)=>{
                 success: true,
                 message: "User found.",
                 data: result.rows[0],
+            })
+        }
+        
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+        
+    }
+})
+
+// put user route
+app.put("/users/:id", async(req: Request, res: Response)=>{
+    const {name, email} = req.body;
+    // console.log(name, email);
+    try {
+        const result = await pool.query(
+            `
+                UPDATE users
+                SET name=$1, email=$2
+                WHERE id=$3
+                RETURNING *
+            `,
+            [name, email, req.params.id]
+        )
+        console.log("result", result)
+        if(result.rows.length===0){
+            res.status(400).json({
+            success: false,
+            message: "User not updated."
+        })
+        }else{
+            res.status(200).json({
+            success: true,
+            message: "User updated successfully",
+            data: result.rows[0]
+        })
+        }
+        
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+    }
+})
+
+// delete user route
+app.delete("/users/:id", async(req: Request, res: Response)=>{
+    try {
+        const result = await pool.query(
+            `
+                DELETE FROM users
+                WHERE id = $1
+                RETURNING *
+            `,
+            [req.params.id]
+        )
+
+        // console.log(result.rows)
+
+        if(result.rowCount === 0){
+            res.status(404).json({
+                success: false,
+                message: "User not found."
+            })
+        }else{
+            res.status(200).json({
+                success: true,
+                message: "User deleted successfully.",
+                data: result.rows,
             })
         }
         
